@@ -1,8 +1,8 @@
 -module(p1).
--export([geneticosNReinas/1, generaPoblacion/2]). 
+-export([geneticosNReinas/1, generaPoblacion/2, cruce/7, generaLista/1, cortaPadre/3, encuentraPadre/2, encuentraElite/2, busquedaByValue/3, generacion/3] ). 
 
 geneticosNReinas(N)when N<4 -> ["no existen respuestas para N = "| N];
-geneticosNReinas(N) -> main(N,4,400,generaPoblacion(generaLista(N),N*4)).
+geneticosNReinas(N) -> main(N,4,700,generaPoblacion(generaLista(N),N*4)).
 
 main(N,Muestra,Cruce,P) -> seleccion_respuesta(generacion(P, N, N*Muestra),P,N,N*Muestra,Cruce).
 
@@ -33,19 +33,31 @@ condi_fitness(_A,_B) -> false.
 
 
 
-
+seleccion_respuesta(Colisiones,Poblacion,_N,_CantPoblacion,0)-> Poblacion;
 seleccion_respuesta([_Col|TCol],[_Cromo|Tcromo],N,CantPoblacion,Cruce) -> seleccion_respuesta([_Col|TCol],[_Cromo|Tcromo],[_Col|TCol],[_Cromo|Tcromo],N,CantPoblacion,Cruce).
 
-seleccion_respuesta([],[],Colisiones,Poblacion,N,CantPoblacion,Cruce)-> ciclo_cruce(Poblacion, Colisiones,N,CantPoblacion,Cruce);
-seleccion_respuesta([Col|_TCol],[Cromo|_Tcromo],_Colisiones,_Poblacion,_N,_CantPoblacion,_Cruce)when Col =:= 0 -> Cromo;
+seleccion_respuesta([],[],Colisiones,Poblacion,N,CantPoblacion,Cruce)-> ciclo_cruce(cruce(Poblacion,busquedaByValue(Poblacion,Colisiones,lists:min(Colisiones)),cortaPadre(encuentraPadre(Poblacion,rand:uniform(N)),N div 2,[]),encuentraPadre(Poblacion,rand:uniform(N)),[],CantPoblacion,N),N,CantPoblacion,Cruce-1);
+seleccion_respuesta([Col|_TCol],[Cromo|_Tcromo],_Colisiones,_Poblacion,_N,_CantPoblacion,_Cruce)when Col =:= 0 -> ["SOLUCION"|Cromo];
 seleccion_respuesta([_Col|TCol],[_Cromo|Tcromo],Colisiones,Poblacion,N,CantPoblacion,Cruce) -> seleccion_respuesta(TCol,Tcromo,Colisiones,Poblacion,N,CantPoblacion,Cruce).
 
+busquedaByValue([PH|_PT],[CH|_CT],Val) when CH =:= Val->PH;
+busquedaByValue([_PH|PT],[_CH|CT],Val)-> busquedaByValue(PT,CT,Val).
 
-ciclo_cruce(Poblacion,_Colisiones,_N,_CantPoblacion,_Cruce) -> Poblacion.
+
+ciclo_cruce(Poblacion,N,CantPoblacion,Cruce) -> seleccion_respuesta(generacion(Poblacion,N,CantPoblacion),Poblacion,N,CantPoblacion,Cruce).
 
 encuentraElite([H|_T],Val) when Val=:=H -> H;
 encuentraElite([_H|T],Val) -> encuentraElite(T,Val).
 
-encuentraPadre(_Poblacion,N)->N.
+encuentraPadre([PH|_PT],0) -> PH;
+encuentraPadre([PH|PT],N)-> encuentraPadre(PT,N-1).
 
-cruce(Poblacion,_Elite,_Padre,_Madre) ->Poblacion.
+cruce(_Poblacion,_Elite,_Padre,_Madre,NuevaPoblacion,0,N) -> NuevaPoblacion ;
+cruce(Poblacion,Elite,Padre,Madre,[],CantPoblacion,N) -> cruce(Poblacion,Elite,Padre,Madre,[Elite],CantPoblacion-1,N);
+cruce(Poblacion,Elite,Padre,Madre,NuevaPoblacion,CantPoblacion,N) -> cruce(Poblacion,Elite,cortaPadre(encuentraPadre(Poblacion,rand:uniform(N))	,N div 2,[]),encuentraPadre(Poblacion,rand:uniform(N)),[Padre++Madre--Padre|NuevaPoblacion],CantPoblacion-1,N).
+
+
+
+cortaPadre(_Padre,0,DivPa) -> DivPa;
+cortaPadre([H|T],I,DivPa) -> cortaPadre(T,I-1,[H|DivPa]).
+
