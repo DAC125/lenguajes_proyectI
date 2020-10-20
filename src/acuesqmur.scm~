@@ -46,7 +46,7 @@
   (lambda (Lista N)
     (cond ((null? Lista) '())
           ;;Hay repetidos y el último es menor que la las filas->Solo le sumo uno al ultimo elemento;;++
-          ((and (repetidos Lista) (< (car Lista) N)) (cons (+ (car Lista) 1) (cdr Lista)));;(append (remove-last Lista) (list (+ (last Lista) 1))))
+          ((and (repetidos Lista) (< (car Lista) N)) (cons (+ (car Lista) 1) (cdr Lista)))
           ;;Cuando toda la lista contiene elementos == N;llega un N+1
           ((> (car (reverse Lista)) N) '())
           ;;Lista mismo tamaño N y último elemento mayor igual a N -> Se llama recursivamente sumando 1 al penúltimo elemento
@@ -68,13 +68,13 @@
       ((= pos 1) (car Lista))
           (else (nsimo (cdr Lista) (- pos 1))))))
 
-;;Dominio:Una Lista
-;;Codominio: True-> Si hay repetidos en toda la lista || False->Cuando NO hay repetidos
+;;Dominio: Una lista
+;;Codominio: True si hay repetidos en la lista
 (define repetidos
-  (lambda (Lista)
-    (cond ((null? Lista) #f)
-          ((miembro? (car Lista) (cdr Lista)) #t)
-          (else (repetidos (cdr Lista))))))
+ (lambda (Lista)
+   (cond ((= (length Lista) 1) #f)
+         ((member? (car Lista) (cdr Lista)) #t)
+         (else (repetidos (cdr Lista))))))
 
 ;;Obtenido de: https://stackoverflow.com/questions/48548524/scheme-member-function
 ;;Dominio:un elemento, y una lista
@@ -92,66 +92,11 @@
     (cond ((null? Lista) 0)
           (else (+ 1 (largo (cdr Lista)))))))
 
-;;Dominio: Una lista
-;;Codominio: La lista sin el ultimo elemento
-(define remove-last
-  (lambda (Lista)
-    (cond ((null? (cdr Lista)) '())
-          (else  (cons (car Lista) (remove-last (cdr Lista)))))))
-
-(define remove-2-last
-  (lambda (Lista)
-    (cond ((null? (cddr Lista)) '())
-          (
-           else  (cons (car Lista) (remove-2-last (cdr Lista)))))))
-
-(define my-but-last
-  (lambda (lista)
-    (cond ((null? lista) '())
-          ((null? (cddr lista)) (car lista))
-          (else (my-but-last (cdr lista))))))
 
 
+;;Autor Eddy Ramirez
+;;Obtenido de: https://github.com/eddituss/99Problems/blob/master/Scheme/99SchemeProblems.scm
+(define member?
+  (lambda (elem l)
+    (ormap (lambda (x) (equal? x elem)) l)))
 
-(define prueba
-  (lambda (A)
-    (cond ((null? A) '())
-          ((cond ((< (largo A) 5) #f)
-                ((= A '(1 2)) #f)) #t)
-          (else '(2)))))
- 
-
-(define repetidos2
- (lambda (Lista)
-   (cond ((= (length Lista) 1) #f)
-   (else (repetidos2-aux Lista 1 2 (length Lista))))))
-
-(define repetidos2-aux
-  (lambda (Lista N M Largo)
-    (cond 
-         ((= M (+ 1 Largo)) (repetidos2-aux (+ N 1) (+ 1 (+ N 1)) Largo))
-         ((= (abs (- (nsimo Lista M) (nsimo Lista N))) (abs (- N M))) #f)
-         (else (solucion-aux Lista N (+ M 1) Largo)))))
-
-
-
-
-
-
-
-
-
-;;https://pdf.sciencedirectassets.com/277811/1-s2.0-S1877042813X00163/1-s2.0-S1877042813011853/main.pdf?X-Amz-Security-
-;;Token=IQoJb3JpZ2luX2VjENz%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLWVhc3QtMSJHMEUCIG8rFiTFMVtJqx3wbjHPIMI8vxuYqEX6FqcPfWfftz
-;WpAiEAr0LyO7HAnARfFLk2aogfatW%2Fb63Nk9s8CnVqwnvT2gQqtAMIJRADGgwwNTkwMDM1NDY4NjUiDFQSuDUsGHDCOEV6ISqRA1a%2Fvt757NTXt5I2uuCq
-;;ueqeV%2F5pFcu3LCNcNYbh86K%2Fht5l5UboXNKVeCBTkyJk%2BeIgPMZ8O3LMT8m58PGCVRNCC%2BqibuDON%2FPlh8rALBPNGD%2Fv0tS5mOTlN4liQ7C0C
-;;jdNRkAwgQ9LKQbXDgZivg01vY5WrAZSGv%2FiCm2oml8CnllUcoge0jhkxO28D6KbscU2oG9krrIBvtxOCZokDFaYc3NI1e8We4vZguRSuDX6zEDSkzc%
-;;Ef%2BDom9hUH%2FclTwUYbcpu8j6lN8%2BLNX2E49nHg1jsEjsjbD33Nw%3D%3D&X-Amz-Algorithm=AWS4-HMAC
-;;-SHA256&X-Amz-Date=20201018T043013Z&X-Amz-SignedHeaders=host&X-Amz-Expires=300&X-Amz-Credential=ASIAQ3PHCVTY5T2HAVUU%
-;;2F20201018%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Signature=2c99b56f61bfe1d62e00107489e97f15c0beb4724b0b7ab54681c5a2085
-;;93560&hash=54148dcc01d36b036aa2ce7e72d9b183253f62d951c9df2145fd92aea8007a23&host=68042c943591013ac2b2430a89b270f6af2c76d8dfd086a07176afe7c76c2c61&pii=S1877042813011853&tid=spdf-286210de-c736-455c-942b-e4499f360840&sid=d3c5ed0c307a66438879e8125014dcec96b2gxrqa&type=client
-
-
-;;http://cic.puj.edu.co/wiki/lib/exe/fetch.php?id=materias%3Alenguajes3%3Alenguajes_iii&cache=cache&media=materias:lenguajes3:backtracking.pdf
-;;https://www.etsisi.upm.es/sites/default/files/asigs/arquitecturas_avanzadas/practicas/MPI/nreinas.pdf
-;;https://www.cs.buap.mx/~zacarias/FZF/nreinas3.pdf
