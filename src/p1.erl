@@ -1,9 +1,9 @@
 -module(p1).
--export([geneticosNReinas/1, generaPoblacion/2,  generaLista/1, cortaPadre/3, encuentraPadre/2,  busquedaByValue/3, generacion/3, cicloMutacion/4, mutacion/3, ciclo_cruce/5, mutaCromosoma/3,mutaCromosoma2/4, fitnes/1, cruza/4] ). 
+-export([geneticosNReinas/1, tiempo/2] ). 
 
 %funcion principal dispara el proceso
 geneticosNReinas(N)when N<4 -> ["no existen respuestas para N = "| N]; %si el N entrada es menor que 4 se retorna no hay respuesta
-geneticosNReinas(N) -> main(N,7,1000,generaPoblacion(generaLista(N),N*7),N,0.1).
+geneticosNReinas(N) -> main(N,7,1000,generaPoblacion(generaLista(N),N*7),N,0.05).
 
 
 %funcion main para setear variables de funcionamiento del algoritmo (Muestras,Cruces,PorMuta)
@@ -49,34 +49,39 @@ condi_fitness(_A,_B) -> false.
 seleccion_respuesta(Colisiones,Poblacion,_N,_CantPoblacion,0,_PorMuta)-> ["Cromosoma con menos colisiones"|busquedaByValue(Poblacion,Colisiones,lists:min(Colisiones))];
 seleccion_respuesta([_Col|TCol],[_Cromo|Tcromo],N,CantPoblacion,Cruce,PorMuta) -> seleccion_respuesta([_Col|TCol],[_Cromo|Tcromo],[_Col|TCol],[_Cromo|Tcromo],N,CantPoblacion,Cruce,PorMuta).
 
-
 seleccion_respuesta([],[],Colisiones,Poblacion,N,CantPoblacion,Cruce,PorMuta)-> ciclo_cruce(cruza(Poblacion,busquedaByValue(Poblacion,Colisiones,lists:min(Colisiones)),CantPoblacion,N),N,CantPoblacion,Cruce-1,PorMuta);
 seleccion_respuesta([Col|_TCol],[Cromo|_Tcromo],_Colisiones,_Poblacion,_N,_CantPoblacion,_Cruce,_PorMuta)when Col =:= 0 -> ["SOLUCION"|Cromo];
 seleccion_respuesta([_Col|TCol],[_Cromo|Tcromo],Colisiones,Poblacion,N,CantPoblacion,Cruce,PorMuta) -> seleccion_respuesta(TCol,Tcromo,Colisiones,Poblacion,N,CantPoblacion,Cruce,PorMuta).
 
 
+%Funcion que busca el elemento de una lista basado en el minimo elemento de otra || Se utiliza para obtener el eltile de la poblacion en bse a la lista de las condiciones 
 busquedaByValue([PH|_PT],[CH|_CT],Val) when CH =:= Val->PH;
 busquedaByValue([_PH|PT],[_CH|CT],Val)-> busquedaByValue(PT,CT,Val).
 
 
+%Funcion que busca un cromosoma de al poblacion de forma aleatoria 
 encuentraPadre([PH|_PT],0) -> PH;
 encuentraPadre([_PH|PT],N)-> encuentraPadre(PT,N-1).
 
 
+%funcion que corta un cromosoma en el indice dado 
 cortaPadre(_Padre,0,DivPa) -> DivPa;
 cortaPadre([H|T],I,DivPa) -> cortaPadre(T,I-1,[H|DivPa]).
 
 
+%Funcion auxiliar que envia la poblacion cruza y mutada a evaluar a selecciona_respueta
 ciclo_cruce(Poblacion,N,CantPoblacion,Cruce,PorMuta) -> seleccion_respuesta(generacion(Poblacion,N,CantPoblacion),Poblacion,N,CantPoblacion,Cruce,PorMuta).
 
 
+%Funcion que se encarga de optener dos padres y cruzarlos para rellenar la poblacion
 cruza(Poblacion,Elite,CantPoblacion,N) -> cruza(Poblacion,Elite,CantPoblacion-1,[Elite],cortaPadre(encuentraPadre(Poblacion,rand:uniform(N-1)),N div 2,[]), encuentraPadre(Poblacion,rand:uniform(N-1)),N).
 
-cruza([PH|PT], Elite, CantPoblacion, [],Padre,Madre,N) -> cruza([PH|PT],Elite,CantPoblacion-1,[Elite],cortaPadre(encuentraPadre([PH|PT],rand:uniform(N-1)),N div 2,[]), encuentraPadre([PH|PT],rand:uniform(N-1)),N);
-cruza(Poblacion,Elite,0,NuevaPoblacion,Padre,Madre,N) ->  cicloMutacion(NuevaPoblacion,round(length(NuevaPoblacion)*0.1),length(NuevaPoblacion),N);
+cruza([PH|PT], Elite, CantPoblacion, [],Padre,Madre,N) -> cruza([PH|PT],Elite,CantPoblacion-1,[Elite],cortaPadre(Elite,N div 2,[]), encuentraPadre([PH|PT],rand:uniform(N-1)),N);
+cruza(Poblacion,Elite,0,NuevaPoblacion,Padre,Madre,N) ->  cicloMutacion(NuevaPoblacion,round(length(NuevaPoblacion)*0.05),length(NuevaPoblacion),N);
 cruza([PH|PT], Elite, CantPoblacion, NuevaPoblacion,Padre,Madre,N) -> cruza([PH|PT],Elite,CantPoblacion-1,NuevaPoblacion++[Padre++Madre--Padre],cortaPadre(encuentraPadre([PH|PT],rand:uniform(N-1)),N div 2,[]), encuentraPadre([PH|PT],rand:uniform(N-1)),N).
 
 
+%Ciclo  
 cicloMutacion(Poblacion,0,CantPoblacion,N) -> Poblacion;
 cicloMutacion(Poblacion,CantMutaciones,CantPoblacion,N) -> cicloMutacion(mutacion(Poblacion,rand:uniform(CantPoblacion-1),N),CantMutaciones-1,CantPoblacion,N).
 
@@ -95,6 +100,13 @@ mutaCromosoma(Cromosoma, I, J) when J<I -> mutaCromosoma2(Cromosoma,lists:sublis
 mutaCromosoma(Cromosoma, J, J) when J =:= length(Cromosoma) -> mutaCromosoma(Cromosoma,J,J-1);
 mutaCromosoma(Cromosoma, I, I) -> mutaCromosoma(Cromosoma,I,I+1).
 mutaCromosoma2(Cromosoma, NCromosoma, I, J) -> NCromosoma++[lists:nth(I,Cromosoma)]++lists:nthtail(J,Cromosoma).
+
+
+% Timer
+tiempo(Foo,N)->A=erlang:timestamp(), 
+               Foo(N), 
+               B=erlang:timestamp(),
+               timer:now_diff(B,A).
 
 
 
